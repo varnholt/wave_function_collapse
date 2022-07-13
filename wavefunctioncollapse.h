@@ -36,16 +36,16 @@ struct Grid
 {
     Grid(int32_t width, int32_t height);
 
-    int getTileIndex(Vector2D coord);
+    int getTileIndex(Vector2D pos);
 
     Vector2D findMinEntropyPos() const;
     bool isFullyCollapsed() const;
-    void collapse(const Vector2D& coord, int32_t tileIndex);
-    void collapse(const Vector2D& coord);
-    std::vector<int> getProbableTiles(const Vector2D& coord);
-    std::vector<Vector2D> getDirections(const Vector2D& coord);
-    void constrain(const Vector2D& coord, int32_t tileIndex);
-    void propagate(const Vector2D& coord);
+    void collapse(const Vector2D& pos, int32_t tile_index);
+    void collapse(const Vector2D& pos);
+    std::vector<int> getProbableTiles(const Vector2D& pos);
+    std::vector<Vector2D> getDirections(const Vector2D& pos);
+    void constrain(const Vector2D& pos, int32_t tile_index);
+    void propagate(const Vector2D& pos);
     void run();
     void dump();
 
