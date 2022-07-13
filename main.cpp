@@ -10,7 +10,7 @@ int main(int /*argc*/, char* /*argv*/ [])
     srand(57784);
 
 
-    Model model(100, 25);
+    Grid model(100, 25);
     model.run();
     model.dump();
 

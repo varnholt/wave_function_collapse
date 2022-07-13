@@ -7,28 +7,34 @@
 
 struct Vector2D
 {
-    int32_t x;
-    int32_t y;
+    int32_t _x{};
+    int32_t _y{};
 };
 
 
 struct Tile
 {
-    char mBitmap;
-    char mKeys[4];
+    char _ascii{};
+    char _bitmask[4];
 };
 
 
 struct Slot
 {
-    std::vector<bool> _tiles;
+    enum class TileState
+    {
+        Probable = 1,
+        RuledOut = 0
+    };
+
+    std::vector<TileState> _tiles;
     int32_t _entropy{};
 };
 
 
-struct Model
+struct Grid
 {
-    Model(int32_t width, int32_t height);
+    Grid(int32_t width, int32_t height);
 
     int getTileIndex(Vector2D coord);
 
@@ -36,7 +42,7 @@ struct Model
     bool isFullyCollapsed() const;
     void collapse(const Vector2D& coord, int32_t tileIndex);
     void collapse(const Vector2D& coord);
-    std::vector<int> getPossibleTiles(const Vector2D& coord);
+    std::vector<int> getProbableTiles(const Vector2D& coord);
     std::vector<Vector2D> getDirections(const Vector2D& coord);
     void constrain(const Vector2D& coord, int32_t tileIndex);
     void propagate(const Vector2D& coord);

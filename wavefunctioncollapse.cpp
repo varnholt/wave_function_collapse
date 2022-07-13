@@ -16,13 +16,13 @@ std::vector<Tile> _tiles = {
 
 int32_t GetAngle(Vector2D dir)
 {
-    if (dir.x == 1)
+    if (dir._x == 1)
         return 0;
-    if (dir.y == 1)
+    if (dir._y == 1)
         return 1;
-    if (dir.x == -1)
+    if (dir._x == -1)
         return 2;
-    if (dir.y == -1)
+    if (dir._y == -1)
         return 3;
 
     return -1;
@@ -30,13 +30,13 @@ int32_t GetAngle(Vector2D dir)
 
 int32_t GetHook(Vector2D dir)
 {
-    if (dir.x == 1)
+    if (dir._x == 1)
         return 2;
-    if (dir.y == 1)
+    if (dir._y == 1)
         return 3;
-    if (dir.x == -1)
+    if (dir._x == -1)
         return 0;
-    if (dir.y == -1)
+    if (dir._y == -1)
         return 1;
 
     return -1;
@@ -45,53 +45,53 @@ int32_t GetHook(Vector2D dir)
 
 bool isTileCompatible(int32_t index_1, int32_t index_2, Vector2D dir)
 {
-    int32_t key_1 = _tiles[index_1].mKeys[GetAngle(dir)];
-    int32_t key_2 = _tiles[index_2].mKeys[GetHook(dir)];
+    int32_t key_1 = _tiles[index_1]._bitmask[GetAngle(dir)];
+    int32_t key_2 = _tiles[index_2]._bitmask[GetHook(dir)];
     return (key_1 & key_2);
 }
 
 
-Model::Model(int32_t width, int32_t height)
+Grid::Grid(int32_t width, int32_t height)
     : _size{width, height}
 {
     _slots.resize(width * height);
 
     for (auto& slot : _slots)
     {
-        slot._tiles.resize(_tiles.size(), true);
+        slot._tiles.resize(_tiles.size(), Slot::TileState::Probable);
     }
 
     _collapsed_count = width * height * static_cast<int32_t>(_tiles.size());
 }
 
 
-int32_t Model::getTileIndex(Vector2D pos)
+int32_t Grid::getTileIndex(Vector2D pos)
 {
-    int32_t index = (pos.y * _size.x + pos.x);
+    const auto index = (pos._y * _size._x + pos._x);
     const auto& tiles = _slots[index]._tiles;
 
-    int32_t res = -1;
-    for (int32_t i = 0; i < _tiles.size(); i++)
+    for (auto i = 0; i < _tiles.size(); i++)
     {
-        if (tiles[i])
+        if (tiles[i] == Slot::TileState::Probable)
         {
-            res = i;
+            return i;
         }
     }
-    return res;
+
+    return -1;
 }
 
 
-Vector2D Model::findMinEntropyPos() const
+Vector2D Grid::findMinEntropyPos() const
 {
     auto entropy_min = INT_MAX;
     std::vector<Vector2D> entropy_min_positions;
 
-    for (auto y = 0; y < _size.y; y++)
+    for (auto y = 0; y < _size._y; y++)
     {
-        for (auto x = 0; x < _size.x; x++)
+        for (auto x = 0; x < _size._x; x++)
         {
-            const auto entropy = _slots[y * _size.x + x]._entropy;
+            const auto entropy = _slots[y * _size._x + x]._entropy;
 
             // already collapsed
             if (entropy == 1)
@@ -116,60 +116,59 @@ Vector2D Model::findMinEntropyPos() const
 }
 
 
-bool Model::isFullyCollapsed() const
+bool Grid::isFullyCollapsed() const
 {
-    return _collapsed_count == (_size.x * _size.y);
+    return _collapsed_count == (_size._x * _size._y);
 }
 
 
-void Model::collapse(const Vector2D& coord, int32_t tile_index)
+void Grid::collapse(const Vector2D& pos, int32_t tile_index)
 {
-    auto& tiles = _slots[(coord.y * _size.x + coord.x)]._tiles;
+    auto& slot = _slots[(pos._y * _size._x + pos._x)];
 
-    for (auto i = 0; i < _tiles.size(); i++)
+    for (auto i = 0; i < slot._tiles.size(); i++)
     {
-        if (tiles[i])
+        if (slot._tiles[i] == Slot::TileState::Probable)
         {
             _collapsed_count--;
         }
 
-        tiles[i] = false;
+        slot._tiles[i] = Slot::TileState::RuledOut;
     }
 
-    tiles[tile_index] = 1;
+    slot._tiles[tile_index] = Slot::TileState::Probable;
+    slot._entropy = 1;
 
     _collapsed_count++;
-
-    _slots[coord.y * _size.x + coord.x]._entropy = 1;
 }
 
 
-void Model::collapse(const Vector2D& coord)
+void Grid::collapse(const Vector2D& pos)
 {
-    std::vector<int32_t> potential_indices;
-    const auto& tiles = _slots[coord.y * _size.x + coord.x]._tiles;
+    const auto& tiles = _slots[pos._y * _size._x + pos._x]._tiles;
 
+    std::vector<int32_t> tile_indices;
     for (auto i = 0; i < _tiles.size(); i++)
     {
-        if (tiles[i])
+        if (tiles[i] == Slot::TileState::Probable)
         {
-            potential_indices.push_back(i);
+            tile_indices.push_back(i);
         }
     }
 
-    const auto selected = potential_indices[rand() % potential_indices.size()];
-    collapse(coord, selected);
+    const auto selected = tile_indices[rand() % tile_indices.size()];
+    collapse(pos, selected);
 }
 
 
-std::vector<int> Model::getPossibleTiles(const Vector2D& coord)
+std::vector<int> Grid::getProbableTiles(const Vector2D& pos)
 {
-    std::vector<int> tile_indices;
-    const auto& tiles = _slots[coord.y * _size.x + coord.x]._tiles;
+    const auto& tiles = _slots[pos._y * _size._x + pos._x]._tiles;
 
-    for (auto i = 0u; i < _tiles.size(); i++)
+    std::vector<int32_t> tile_indices;
+    for (auto i = 0; i < _tiles.size(); i++)
     {
-        if (tiles[i])
+        if (tiles[i] == Slot::TileState::Probable)
         {
             tile_indices.push_back(i);
         }
@@ -179,7 +178,7 @@ std::vector<int> Model::getPossibleTiles(const Vector2D& coord)
 }
 
 
-std::vector<Vector2D> Model::getDirections(const Vector2D& pos)
+std::vector<Vector2D> Grid::getDirections(const Vector2D& pos)
 {
     std::vector<Vector2D> directions;
 
@@ -188,22 +187,22 @@ std::vector<Vector2D> Model::getDirections(const Vector2D& pos)
     static constexpr Vector2D up{0, -1};
     static constexpr Vector2D down{0, 1};
 
-    if (pos.x < (_size.x - 1))
+    if (pos._x < (_size._x - 1))
     {
         directions.push_back(left);
     }
 
-    if (pos.y < (_size.y - 1))
+    if (pos._y < (_size._y - 1))
     {
         directions.push_back(down);
     }
 
-    if (pos.x > 0)
+    if (pos._x > 0)
     {
         directions.push_back(right);
     }
 
-    if (pos.y > 0)
+    if (pos._y > 0)
     {
         directions.push_back(up);
     }
@@ -212,50 +211,45 @@ std::vector<Vector2D> Model::getDirections(const Vector2D& pos)
 }
 
 
-void Model::constrain(const Vector2D& pos, int32_t tile_index)
+void Grid::constrain(const Vector2D& pos, int32_t tile_index)
 {
-    auto& tiles = _slots[pos.y * _size.x + pos.x]._tiles;
-    tiles[tile_index] = 0;
-
-    _slots[pos.y * _size.x + pos.x]._entropy--;
+    auto& slot = _slots[pos._y * _size._x + pos._x];
+    slot._tiles[tile_index] = Slot::TileState::RuledOut;
+    slot._entropy--;
     _collapsed_count--;
 }
 
 
-void Model::propagate(const Vector2D& pos)
+void Grid::propagate(const Vector2D& start_pos)
 {
     std::vector<Vector2D> positions;
-    positions.push_back(pos);
+    positions.push_back(start_pos);
 
     while (!positions.empty())
     {
         const auto current_pos = positions.back();
         positions.pop_back();
 
-        const auto curPossibleTiles = getPossibleTiles(current_pos);
+        const auto probable_tiles = getProbableTiles(current_pos);
+
         const auto directions = getDirections(current_pos);
-
-        for (int32_t d = 0 ; d < directions.size(); d++)
+        for (const auto& direction : directions)
         {
-            const auto dir = directions[d];
-            const Vector2D otherCoord = {current_pos.x + dir.x, current_pos.y + dir.y};
-            const auto otherPossibleTiles = getPossibleTiles(otherCoord);
+            const Vector2D next_pos = {current_pos._x + direction._x, current_pos._y + direction._y};
+            const auto next_probable_tiles = getProbableTiles(next_pos);
 
-            for (int32_t otherTileIndex = 0; otherTileIndex < otherPossibleTiles.size(); otherTileIndex++)
+            for (auto next_tile : next_probable_tiles)
             {
-                const auto otherTile = otherPossibleTiles[otherTileIndex];
-
-                auto tileCompatible = false;
-                for (auto curTileIndex = 0; curTileIndex < curPossibleTiles.size(); curTileIndex++)
+                auto compatible = false;
+                for (auto current_tile : probable_tiles)
                 {
-                    auto curTile = curPossibleTiles[curTileIndex];
-                    tileCompatible |= isTileCompatible(curTile, otherTile, dir);
+                    compatible |= isTileCompatible(current_tile, next_tile, direction);
                 }
 
-                if (!tileCompatible)
+                if (!compatible)
                 {
-                    constrain(otherCoord, otherTile);
-                    positions.push_back(otherCoord);
+                    constrain(next_pos, next_tile);
+                    positions.push_back(next_pos);
                 }
             }
         }
@@ -263,7 +257,7 @@ void Model::propagate(const Vector2D& pos)
 }
 
 
-void Model::run()
+void Grid::run()
 {
     while (!isFullyCollapsed())
     {
@@ -274,14 +268,14 @@ void Model::run()
 }
 
 
-void Model::dump()
+void Grid::dump()
 {
-    for (auto y = 0; y < _size.y; y++)
+    for (auto y = 0; y < _size._y; y++)
     {
-        for (auto x = 0; x < _size.x; x++)
+        for (auto x = 0; x < _size._x; x++)
         {
             const auto index = getTileIndex(Vector2D{x, y});
-            std::cout << _tiles[index].mBitmap;
+            std::cout << _tiles[index]._ascii;
         }
         std::cout << std::endl;
     }
