@@ -3,16 +3,6 @@
 #include <chrono>
 #include <iostream>
 
-std::vector<Tile> _tiles = {
-    {' ',{2,2,2,2}},
-    {'X',{1,1,1,1}},
-    {'-',{1,2,1,1}},
-    {'-',{1,1,1,2}},
-    {'|',{2,1,1,1}},
-    {'|',{1,1,2,1}},
-};
-
-
 
 int32_t GetAngle(Vector2D dir)
 {
@@ -43,7 +33,7 @@ int32_t GetHook(Vector2D dir)
 }
 
 
-bool isTileCompatible(int32_t index_1, int32_t index_2, Vector2D dir)
+bool Grid::isTileCompatible(int32_t index_1, int32_t index_2, const Vector2D& dir)
 {
     int32_t key_1 = _tiles[index_1]._bitmask[GetAngle(dir)];
     int32_t key_2 = _tiles[index_2]._bitmask[GetHook(dir)];
@@ -54,31 +44,37 @@ bool isTileCompatible(int32_t index_1, int32_t index_2, Vector2D dir)
 Grid::Grid(int32_t width, int32_t height)
     : _size{width, height}
 {
+    _tiles = {
+        {' ',{2,2,2,2}},
+        {'X',{1,1,1,1}},
+        {'-',{1,2,1,1}},
+        {'-',{1,1,1,2}},
+        {'|',{2,1,1,1}},
+        {'|',{1,1,2,1}},
+    };
+
     _slots.resize(width * height);
 
     for (auto& slot : _slots)
     {
-        slot._tiles.resize(_tiles.size(), Slot::TileState::Probable);
+        slot._tile_states.resize(_tiles.size(), Slot::TileState::Probable);
     }
 
     _collapsed_count = width * height * static_cast<int32_t>(_tiles.size());
 }
 
 
-int32_t Grid::getTileIndex(Vector2D pos)
+int32_t Grid::getProbableTileIndex(const Vector2D& pos)
 {
     const auto index = (pos._y * _size._x + pos._x);
-    const auto& tiles = _slots[index]._tiles;
+    const auto& states = _slots[index]._tile_states;
 
-    for (auto i = 0; i < _tiles.size(); i++)
+    const auto it = std::find_if(states.begin(), states.end(), [](const auto& s)
     {
-        if (tiles[i] == Slot::TileState::Probable)
-        {
-            return i;
-        }
-    }
+        return s == Slot::TileState::Probable;
+    });
 
-    return -1;
+    return static_cast<int32_t>(std::distance(states.begin(), it));
 }
 
 
@@ -126,17 +122,17 @@ void Grid::collapse(const Vector2D& pos, int32_t tile_index)
 {
     auto& slot = _slots[(pos._y * _size._x + pos._x)];
 
-    for (auto i = 0; i < slot._tiles.size(); i++)
+    for (auto i = 0; i < slot._tile_states.size(); i++)
     {
-        if (slot._tiles[i] == Slot::TileState::Probable)
+        if (slot._tile_states[i] == Slot::TileState::Probable)
         {
             _collapsed_count--;
         }
 
-        slot._tiles[i] = Slot::TileState::RuledOut;
+        slot._tile_states[i] = Slot::TileState::RuledOut;
     }
 
-    slot._tiles[tile_index] = Slot::TileState::Probable;
+    slot._tile_states[tile_index] = Slot::TileState::Probable;
     slot._entropy = 1;
 
     _collapsed_count++;
@@ -145,7 +141,7 @@ void Grid::collapse(const Vector2D& pos, int32_t tile_index)
 
 void Grid::collapse(const Vector2D& pos)
 {
-    const auto& tiles = _slots[pos._y * _size._x + pos._x]._tiles;
+    const auto& tiles = _slots[pos._y * _size._x + pos._x]._tile_states;
 
     std::vector<int32_t> tile_indices;
     for (auto i = 0; i < _tiles.size(); i++)
@@ -163,7 +159,7 @@ void Grid::collapse(const Vector2D& pos)
 
 std::vector<int> Grid::getProbableTiles(const Vector2D& pos)
 {
-    const auto& tiles = _slots[pos._y * _size._x + pos._x]._tiles;
+    const auto& tiles = _slots[pos._y * _size._x + pos._x]._tile_states;
 
     std::vector<int32_t> tile_indices;
     for (auto i = 0; i < _tiles.size(); i++)
@@ -214,7 +210,7 @@ std::vector<Vector2D> Grid::getDirections(const Vector2D& pos)
 void Grid::constrain(const Vector2D& pos, int32_t tile_index)
 {
     auto& slot = _slots[pos._y * _size._x + pos._x];
-    slot._tiles[tile_index] = Slot::TileState::RuledOut;
+    slot._tile_states[tile_index] = Slot::TileState::RuledOut;
     slot._entropy--;
     _collapsed_count--;
 }
@@ -274,7 +270,7 @@ void Grid::dump()
     {
         for (auto x = 0; x < _size._x; x++)
         {
-            const auto index = getTileIndex(Vector2D{x, y});
+            const auto index = getProbableTileIndex(Vector2D{x, y});
             std::cout << _tiles[index]._ascii;
         }
         std::cout << std::endl;

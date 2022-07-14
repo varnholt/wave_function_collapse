@@ -4,18 +4,12 @@
 #include <cstdint>
 #include <vector>
 
+#include "tile.h"
 
 struct Vector2D
 {
     int32_t _x{};
     int32_t _y{};
-};
-
-
-struct Tile
-{
-    char _ascii{};
-    char _bitmask[4];
 };
 
 
@@ -27,7 +21,7 @@ struct Slot
         RuledOut = 0
     };
 
-    std::vector<TileState> _tiles;
+    std::vector<TileState> _tile_states;
     int32_t _entropy{};
 };
 
@@ -36,7 +30,8 @@ struct Grid
 {
     Grid(int32_t width, int32_t height);
 
-    int getTileIndex(Vector2D pos);
+    int getProbableTileIndex(const Vector2D& pos);
+    bool isTileCompatible(int32_t index_1, int32_t index_2, const Vector2D& dir);
 
     Vector2D findMinEntropyPos() const;
     bool isFullyCollapsed() const;
@@ -51,6 +46,7 @@ struct Grid
 
     Vector2D _size;
     std::vector<Slot> _slots;
+    std::vector<Tile> _tiles;
     int32_t _collapsed_count{};
 };
 

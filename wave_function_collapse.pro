@@ -9,12 +9,16 @@ CONFIG += c++17
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    drawabletile.cpp \
     main.cpp \
     mainwindow.cpp \
+    tile.cpp \
     wavefunctioncollapse.cpp
 
 HEADERS += \
+    drawabletile.h \
     mainwindow.h \
+    tile.h \
     wavefunctioncollapse.h
 
 FORMS += \
