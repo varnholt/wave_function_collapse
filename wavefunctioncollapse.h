@@ -23,7 +23,7 @@ struct Slot
 
 struct Grid
 {
-    Grid(int32_t width, int32_t height);
+    Grid(int32_t width, int32_t height, const std::vector<Tile>& tiles);
 
     int getProbableTileIndex(const Vector2D& pos);
     bool isTileCompatible(int32_t index_1, int32_t index_2, const Vector2D& dir);

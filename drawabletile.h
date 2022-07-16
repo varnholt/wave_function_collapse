@@ -3,10 +3,12 @@
 
 #include "tile.h"
 
-class DrawableTile : public Tile
+#include <QImage>
+
+struct DrawableTile : public Tile
 {
-public:
-    DrawableTile();
+    DrawableTile(int32_t tile_index);
+    QImage _image;
 };
 
 #endif // DRAWABLETILE_H

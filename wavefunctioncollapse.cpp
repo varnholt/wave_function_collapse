@@ -13,18 +13,10 @@ bool Grid::isTileCompatible(int32_t index_1, int32_t index_2, const Vector2D& di
 }
 
 
-Grid::Grid(int32_t width, int32_t height)
-    : _size{width, height}
+Grid::Grid(int32_t width, int32_t height, const std::vector<Tile>& tiles)
+    : _size{width, height},
+      _tiles(tiles)
 {
-    // _tiles = {
-    //     {' ',{2,2,2,2}},
-    //     {'X',{1,1,1,1}},
-    //     {'-',{1,2,1,1}},
-    //     {'-',{1,1,1,2}},
-    //     {'|',{2,1,1,1}},
-    //     {'|',{1,1,2,1}},
-    // };
-
     _slots.resize(width * height);
 
     for (auto& slot : _slots)
@@ -123,6 +115,11 @@ void Grid::collapse(const Vector2D& pos)
             tile_indices.push_back(i);
         }
     }
+
+    // if (tile_indices.empty())
+    // {
+    //     return;
+    // }
 
     const auto selected = tile_indices[rand() % tile_indices.size()];
     collapse(pos, selected);
