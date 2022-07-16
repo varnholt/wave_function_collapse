@@ -6,11 +6,6 @@
 
 #include "tile.h"
 
-struct Vector2D
-{
-    int32_t _x{};
-    int32_t _y{};
-};
 
 
 struct Slot

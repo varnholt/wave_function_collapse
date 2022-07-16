@@ -13,12 +13,16 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     tile.cpp \
+    tiledtexturewidget.cpp \
+    vector2d.cpp \
     wavefunctioncollapse.cpp
 
 HEADERS += \
     drawabletile.h \
     mainwindow.h \
     tile.h \
+    tiledtexturewidget.h \
+    vector2d.h \
     wavefunctioncollapse.h
 
 FORMS += \

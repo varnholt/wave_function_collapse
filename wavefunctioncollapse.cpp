@@ -4,54 +4,26 @@
 #include <iostream>
 
 
-int32_t GetAngle(Vector2D dir)
-{
-    if (dir._x == 1)
-        return 0;
-    if (dir._y == 1)
-        return 1;
-    if (dir._x == -1)
-        return 2;
-    if (dir._y == -1)
-        return 3;
-
-    return -1;
-}
-
-int32_t GetHook(Vector2D dir)
-{
-    if (dir._x == 1)
-        return 2;
-    if (dir._y == 1)
-        return 3;
-    if (dir._x == -1)
-        return 0;
-    if (dir._y == -1)
-        return 1;
-
-    return -1;
-}
-
-
 bool Grid::isTileCompatible(int32_t index_1, int32_t index_2, const Vector2D& dir)
 {
-    int32_t key_1 = _tiles[index_1]._bitmask[GetAngle(dir)];
-    int32_t key_2 = _tiles[index_2]._bitmask[GetHook(dir)];
-    return (key_1 & key_2);
+    auto& t1 = _tiles[index_1];
+    auto& t2 = _tiles[index_2];
+
+    return t1.isCompatibleWith(t2, dir);
 }
 
 
 Grid::Grid(int32_t width, int32_t height)
     : _size{width, height}
 {
-    _tiles = {
-        {' ',{2,2,2,2}},
-        {'X',{1,1,1,1}},
-        {'-',{1,2,1,1}},
-        {'-',{1,1,1,2}},
-        {'|',{2,1,1,1}},
-        {'|',{1,1,2,1}},
-    };
+    // _tiles = {
+    //     {' ',{2,2,2,2}},
+    //     {'X',{1,1,1,1}},
+    //     {'-',{1,2,1,1}},
+    //     {'-',{1,1,1,2}},
+    //     {'|',{2,1,1,1}},
+    //     {'|',{1,1,2,1}},
+    // };
 
     _slots.resize(width * height);
 
@@ -271,7 +243,7 @@ void Grid::dump()
         for (auto x = 0; x < _size._x; x++)
         {
             const auto index = getProbableTileIndex(Vector2D{x, y});
-            std::cout << _tiles[index]._ascii;
+            std::cout << _tiles[index].instance_counter;
         }
         std::cout << std::endl;
     }
