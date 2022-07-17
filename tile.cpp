@@ -27,35 +27,18 @@ Tile::Direction getDirection(const Vector2D& dir)
 }
 
 Tile::Tile(int32_t tile_index)
- : _tile_index(tile_index)
+ : _tile_index(tile_index),
+   _instance_index(instance_counter++)
 {
-    instance_counter++;
-}
-
-
-void Tile::setCompatibleTiles(const std::array<std::set<int32_t>, 4>& arr)
-{
-    _compatible_tiles[Tile::Direction::North] = arr[0];
-    _compatible_tiles[Tile::Direction::East] = arr[1];
-    _compatible_tiles[Tile::Direction::South] = arr[2];
-    _compatible_tiles[Tile::Direction::West] = arr[3];
 }
 
 
 bool Tile::isCompatibleWith(const Tile& another, const Vector2D& dir_vector) const
 {
-    const auto dir = getDirection(dir_vector);
-    const auto set_it = _compatible_tiles.find(dir);
-    if (set_it == _compatible_tiles.end())
-    {
-        return false;
-    }
+    return true;
 
-    const auto& tile_set = set_it->second;
+    const auto& tile_set = _compatible_tiles[static_cast<int32_t>(getDirection(dir_vector))];
     const auto compatible = tile_set.find(another._tile_index) != tile_set.end();
-
-    // std::cout << compatible << std::endl;
-
     return compatible;
 }
 
