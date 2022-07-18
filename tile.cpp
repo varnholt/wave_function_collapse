@@ -26,17 +26,16 @@ Tile::Direction getDirection(const Vector2D& dir)
 
 }
 
-Tile::Tile(int32_t tile_index)
+Tile::Tile(int32_t tile_index, const std::array<std::set<int32_t>, 4>& compatible_tiles)
  : _tile_index(tile_index),
-   _instance_index(instance_counter++)
+   _instance_index(instance_counter++),
+   _compatible_tiles(compatible_tiles)
 {
 }
 
 
 bool Tile::isCompatibleWith(const Tile& another, const Vector2D& dir_vector) const
 {
-    return true;
-
     const auto& tile_set = _compatible_tiles[static_cast<int32_t>(getDirection(dir_vector))];
     const auto compatible = tile_set.find(another._tile_index) != tile_set.end();
     return compatible;

@@ -17,12 +17,12 @@ struct Tile
         West = 3
     };
 
-    Tile(int32_t tile_index);
+    Tile(int32_t tile_index, const std::array<std::set<int32_t>, 4>& compatible_tiles);
     virtual bool isCompatibleWith(const Tile& another, const Vector2D &dir) const;
 
-    std::array<std::set<int32_t>, 4> _compatible_tiles;
     int32_t _tile_index = 0;
     int32_t _instance_index = 0;
+    std::array<std::set<int32_t>, 4> _compatible_tiles;
     static int32_t instance_counter;
 };
 

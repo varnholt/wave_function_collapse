@@ -31,14 +31,15 @@ struct Grid
     void collapseTile(Slot& slot, int32_t tile_index);
     void collapseSlot(const Vector2D& pos);
     std::vector<int32_t> getProbableTileIndices(const Vector2D& pos) const;
-    int32_t getProbableTileIndex(const Vector2D& pos);
+    int32_t getProbableTileIndex(const Vector2D& pos) const;
     std::vector<Vector2D> getDirections(const Vector2D& pos) const;
 
     void run();
     void propagate(const Vector2D& pos);
     void constrain(const Vector2D& pos, int32_t tile_index);
+    std::vector<int32_t> readGrid() const;
 
-    void dump();
+    void debug() const;
 
     Vector2D _size;
     std::vector<Slot> _slots;

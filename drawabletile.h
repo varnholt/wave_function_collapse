@@ -7,7 +7,7 @@
 
 struct DrawableTile : public Tile
 {
-    DrawableTile(int32_t tile_index);
+    DrawableTile(int32_t tile_index, const std::array<std::set<int32_t>, 4>& compatible_tiles);
     QImage _image;
 };
 

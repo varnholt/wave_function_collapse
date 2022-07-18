@@ -14,6 +14,7 @@ SOURCES += \
     mainwindow.cpp \
     tile.cpp \
     tiledtexturewidget.cpp \
+    tilegridwidget.cpp \
     vector2d.cpp \
     wavefunctioncollapse.cpp
 
@@ -22,6 +23,7 @@ HEADERS += \
     mainwindow.h \
     tile.h \
     tiledtexturewidget.h \
+    tilegridwidget.h \
     vector2d.h \
     wavefunctioncollapse.h
 

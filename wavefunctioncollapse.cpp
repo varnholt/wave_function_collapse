@@ -4,15 +4,6 @@
 #include <iostream>
 
 
-bool Grid::isTileCompatible(int32_t index_1, int32_t index_2, const Vector2D& dir) const
-{
-    const auto& t1 = _tiles[index_1];
-    const auto& t2 = _tiles[index_2];
-
-    return t1.isCompatibleWith(t2, dir);
-}
-
-
 Grid::Grid(int32_t width, int32_t height, const std::vector<Tile>& tiles)
     : _size{width, height},
       _tiles(tiles),
@@ -23,11 +14,12 @@ Grid::Grid(int32_t width, int32_t height, const std::vector<Tile>& tiles)
     for (auto& slot : _slots)
     {
         slot._tile_states.resize(_tiles.size(), Slot::TileState::Probable);
+        slot._entropy = static_cast<int32_t>(_tiles.size());
     }
 }
 
 
-int32_t Grid::getProbableTileIndex(const Vector2D& pos)
+int32_t Grid::getProbableTileIndex(const Vector2D& pos) const
 {
     const auto index = (pos._y * _size._x + pos._x);
     const auto& states = _slots[index]._tile_states;
@@ -114,12 +106,14 @@ void Grid::collapseSlot(const Vector2D& pos)
         }
     }
 
-    if (tile_indices.empty())
-    {
-        _terminate = true;
-        std::cerr << "giving up, slots left: " << _collapsed_remaining_count << std::endl;
-        return;
-    }
+    // for debugging only
+    //
+    // if (tile_indices.empty())
+    // {
+    //     _terminate = true;
+    //     std::cerr << "giving up, slots left: " << _collapsed_remaining_count << " pos: " << pos._x << ", " << pos._y << std::endl;
+    //     return;
+    // }
 
     const auto selected_tile_index = tile_indices[rand() % tile_indices.size()];
     collapseTile(slot, selected_tile_index);
@@ -182,6 +176,14 @@ void Grid::constrain(const Vector2D& pos, int32_t tile_index)
     slot._tile_states[tile_index] = Slot::TileState::RuledOut;
     slot._entropy--;
     _collapsed_remaining_count--;
+
+    // for debugging only
+    //
+    // if (slot._entropy == 0)
+    // {
+    //     _terminate = true;
+    //     std::cerr << "entropy set to 0: " << _collapsed_remaining_count << " tile index: " << _tiles[tile_index]._tile_index << " pos: " << pos._x << ", " << pos._y << std::endl;
+    // }
 }
 
 
@@ -194,20 +196,23 @@ void Grid::propagate(const Vector2D& start_pos)
         const auto current_pos = positions.back();
         positions.pop_back();
 
-        const auto current_probable_tiles = getProbableTileIndices(current_pos);
+        const auto current_probable_tile_indices = getProbableTileIndices(current_pos);
 
         const auto directions = getDirections(current_pos);
         for (const auto& direction : directions)
         {
-            const Vector2D next_pos = {current_pos._x + direction._x, current_pos._y + direction._y};
+            const Vector2D next_pos{current_pos._x + direction._x, current_pos._y + direction._y};
             const auto next_probable_tile_indices = getProbableTileIndices(next_pos);
 
             for (auto next_tile_index : next_probable_tile_indices)
             {
                 auto compatible = false;
-                for (auto current_tile : current_probable_tiles)
+                for (auto current_tile_index : current_probable_tile_indices)
                 {
-                    compatible |= isTileCompatible(current_tile, next_tile_index, direction);
+                    const auto& tile_a = _tiles[current_tile_index];
+                    const auto& tile_b = _tiles[next_tile_index];
+
+                    compatible |= tile_a.isCompatibleWith(tile_b, direction);
                 }
 
                 if (!compatible)
@@ -232,7 +237,25 @@ void Grid::run()
 }
 
 
-void Grid::dump()
+std::vector<int32_t> Grid::readGrid() const
+{
+    std::vector<int32_t> grid;
+    grid.resize(_size._x * _size._y);
+
+    for (auto y = 0; y < _size._y; y++)
+    {
+        for (auto x = 0; x < _size._x; x++)
+        {
+            const auto index = getProbableTileIndex(Vector2D{x, y});
+            grid[y * _size._x + x] = _tiles[index]._tile_index;
+        }
+    }
+
+    return grid;
+}
+
+
+void Grid::debug() const
 {
     for (auto y = 0; y < _size._y; y++)
     {
