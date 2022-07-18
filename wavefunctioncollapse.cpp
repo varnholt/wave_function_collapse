@@ -1,6 +1,5 @@
 #include "wavefunctioncollapse.h"
 
-#include <chrono>
 #include <iostream>
 
 
@@ -115,6 +114,7 @@ void Grid::collapseSlot(const Vector2D& pos)
     //     return;
     // }
 
+    // this should be weighted instead, i.e. tiles should have a bias
     const auto selected_tile_index = tile_indices[rand() % tile_indices.size()];
     collapseTile(slot, selected_tile_index);
 }
