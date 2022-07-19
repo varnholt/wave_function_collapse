@@ -10,11 +10,15 @@ class QPaintEvent;
 
 class TileGridWidget : public QWidget
 {
+
 public:
     explicit TileGridWidget(QWidget* parent = nullptr);
 
     void setTexture(const QImage& newTexture);
+    const QImage& texture() const;
+
     void setGrid(const Vector2D &size, const std::vector<int32_t>& newGrid);
+
 
 protected:
     void paintEvent(QPaintEvent*);
