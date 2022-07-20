@@ -17,6 +17,7 @@ public:
 signals:
 
     void tileSelected(int32_t index);
+    void tileSelectionUpdated(const std::set<int32_t>& selection);
 
 protected:
 

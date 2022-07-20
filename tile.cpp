@@ -26,11 +26,37 @@ Tile::Direction getDirection(const Vector2D& dir)
 
 }
 
+
+Tile::Tile(int32_t tile_index)
+    : _tile_index(tile_index),
+      _instance_index(instance_counter++)
+{
+}
+
+
 Tile::Tile(int32_t tile_index, const std::array<std::set<int32_t>, 4>& compatible_tiles)
  : _tile_index(tile_index),
    _instance_index(instance_counter++),
    _compatible_tiles(compatible_tiles)
 {
+}
+
+
+void Tile::addCompatibleTile(Direction dir, int32_t other)
+{
+    _compatible_tiles[static_cast<int32_t>(dir)].insert(other);
+}
+
+
+void Tile::removeCompatibleTile(Direction dir, int32_t other)
+{
+    _compatible_tiles[static_cast<int32_t>(dir)].erase(other);
+}
+
+
+void Tile::setCompatibleTiles(Direction dir, const std::set<int32_t> &indices)
+{
+    _compatible_tiles[static_cast<int32_t>(dir)] = indices;
 }
 
 

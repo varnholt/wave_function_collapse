@@ -4,11 +4,18 @@
 #include "config.h"
 #include "wavefunctioncollapse.h"
 
+#include <QButtonGroup>
+
+namespace
+{
+Tile::Direction current_direction = Tile::Direction::North;
+std::optional<int32_t> current_tile_index;
+}
 
 void MainWindow::generate()
 {
-    int32_t width = ui->_width->text().toInt();
-    int32_t height = ui->_height->text().toInt();
+    int32_t width = ui->_grid_width->text().toInt();
+    int32_t height = ui->_grid_height->text().toInt();
 
     std::vector<Tile> tiles;
 
@@ -17,6 +24,7 @@ void MainWindow::generate()
     model.run();
     model.debug();
 }
+
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -38,6 +46,10 @@ MainWindow::MainWindow(QWidget *parent)
         &TiledTextureWidget::tileSelected,
         this,
         [this](int32_t index){
+
+            Config::instance().addTile(index);
+            current_tile_index = index;
+
             const auto& image = ui->_tiled_image->texture();
             const auto cols = 5;
             const auto tile_width = 16;
@@ -49,12 +61,67 @@ MainWindow::MainWindow(QWidget *parent)
             ui->_tile_label->setPixmap(QPixmap::fromImage(copy));
         }
     );
+
+    connect(
+        ui->_compatible_tiles,
+        &TiledTextureWidget::tileSelectionUpdated,
+        this,
+        [](const std::set<int32_t>& indices){
+            if (!current_tile_index.has_value())
+            {
+                return;
+            }
+            auto& tile = Config::instance().getTile(current_tile_index.value());
+            tile.setCompatibleTiles(current_direction, indices);
+        }
+    );
+
+    connect(
+        ui->_dir_north,
+        &QToolButton::pressed,
+        this,
+        [](){
+        current_direction = Tile::Direction::North;
+    });
+
+    connect(
+        ui->_dir_east,
+        &QToolButton::pressed,
+        this,
+        [](){
+        current_direction = Tile::Direction::East;
+    });
+
+    connect(
+        ui->_dir_south,
+        &QToolButton::pressed,
+        this,
+        [](){
+        current_direction = Tile::Direction::South;
+    });
+
+    connect(
+        ui->_dir_west,
+        &QToolButton::pressed,
+        this,
+        [](){
+        current_direction = Tile::Direction::West;
+    });
+
+    auto dir_button_group = new QButtonGroup(this);
+    dir_button_group->setExclusive(true);
+    dir_button_group->addButton(ui->_dir_north);
+    dir_button_group->addButton(ui->_dir_east);
+    dir_button_group->addButton(ui->_dir_south);
+    dir_button_group->addButton(ui->_dir_west);
 }
+
 
 MainWindow::~MainWindow()
 {
     delete ui;
 }
+
 
 void MainWindow::unitTest()
 {

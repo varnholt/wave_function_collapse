@@ -104,6 +104,8 @@ void TiledTextureWidget::updateSelection()
         {
             _selected_tile_indices.insert(_selected_tile_index);
         }
+
+        emit tileSelectionUpdated(_selected_tile_indices);
     }
 }
 
@@ -115,6 +117,7 @@ void TiledTextureWidget::mousePressEvent(QMouseEvent *event)
     _selected_tile_index = (event->pos().y() / _tile_size) * (_texture.width() / _tile_size) + (event->pos().x() / _tile_size);
     updateSelection();
     emit tileSelected(_selected_tile_index);
+    update();
 }
 
 
