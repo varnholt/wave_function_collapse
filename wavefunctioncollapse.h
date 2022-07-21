@@ -45,7 +45,8 @@ struct Grid
     std::vector<Slot> _slots;
     std::vector<Tile> _tiles;
     int32_t _collapsed_remaining_count{};
-    bool _terminate{false};
+    int32_t _collapsed_slot_count{};
+    bool _given_up{false};
 };
 
 

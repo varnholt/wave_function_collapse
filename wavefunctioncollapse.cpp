@@ -106,17 +106,19 @@ void Grid::collapseSlot(const Vector2D& pos)
     }
 
     // for debugging only
-    //
     if (tile_indices.empty())
     {
-        _terminate = true;
-        std::cerr << "giving up, slots left: " << _collapsed_remaining_count << " pos: " << pos._x << ", " << pos._y << std::endl;
+        _given_up = true;
+        // std::cerr << "giving up, slots left: " << _collapsed_remaining_count << " pos: " << pos._x << ", " << pos._y << std::endl;
         return;
     }
 
     // this should be weighted instead, i.e. tiles should have a bias
     const auto selected_tile_index = tile_indices[rand() % tile_indices.size()];
     collapseTile(slot, selected_tile_index);
+
+    // std::cout << "collapsed slot at pos: " << pos._x << ", " << pos._y << ": " << _tiles[selected_tile_index]._tile_index << std::endl;
+    _collapsed_slot_count++;
 }
 
 
@@ -228,7 +230,7 @@ void Grid::propagate(const Vector2D& start_pos)
 
 void Grid::run()
 {
-    while (!isFullyCollapsed() && !_terminate)
+    while (!isFullyCollapsed() && !_given_up)
     {
         const auto slot_pos = findMinEntropyPos();
         collapseSlot(slot_pos);
@@ -247,7 +249,10 @@ std::vector<int32_t> Grid::readGrid() const
         for (auto x = 0; x < _size._x; x++)
         {
             const auto index = getProbableTileIndex(Vector2D{x, y});
-            grid[y * _size._x + x] = _tiles[index]._tile_index;
+            if (index < _tiles.size())
+            {
+                grid[y * _size._x + x] = _tiles[index]._tile_index;
+            }
         }
     }
 

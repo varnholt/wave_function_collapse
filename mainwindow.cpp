@@ -4,6 +4,7 @@
 #include "config.h"
 #include "wavefunctioncollapse.h"
 
+#include <iostream>
 #include <QButtonGroup>
 
 namespace
@@ -205,10 +206,27 @@ void MainWindow::generate()
 
     std::srand(std::time(0));
     Tile::instance_counter = 0;
-    Grid grid(config._grid_size._x, config._grid_size._y, config._tiles);
-    grid.run();
 
-    ui->_tile_grid->setTexture(texture);
-    ui->_tile_grid->setGrid(grid._size, grid.readGrid());
+    auto succesful = false;
+    int32_t collapsed_slot_count = 0;
+    while (!succesful)
+    {
+        Grid grid(config._grid_size._x, config._grid_size._y, config._tiles);
+        grid.run();
+
+        succesful = !grid._given_up;
+
+        if (grid._collapsed_slot_count > collapsed_slot_count)
+        {
+            collapsed_slot_count = grid._collapsed_slot_count;
+            std::cout << collapsed_slot_count << std::endl;
+        }
+
+        if (succesful)
+        {
+            ui->_tile_grid->setTexture(texture);
+            ui->_tile_grid->setGrid(grid._size, grid.readGrid());
+        }
+    }
 }
 
