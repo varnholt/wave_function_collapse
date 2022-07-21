@@ -1,6 +1,7 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#include "json.hpp"
 #include "tile.h"
 #include "vector2d.h"
 
@@ -20,6 +21,9 @@ struct Config
     Vector2D _texture_size;
     Vector2D _grid_size;
     int32_t _tile_size{0};
+
+    void load();
+    void save();
 };
 
 #endif // CONFIG_H

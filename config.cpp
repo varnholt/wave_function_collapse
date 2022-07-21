@@ -1,5 +1,8 @@
 #include "config.h"
 
+#include <iostream>
+#include <fstream>
+
 
 Config& Config::instance()
 {
@@ -42,4 +45,57 @@ Tile& Config::getTile(int32_t tile_index)
     });
 
     return *it;
+}
+
+
+void Config::load()
+{
+    _tiles.clear();
+
+    std::ifstream f("config.json");
+    const nlohmann::json data = nlohmann::json::parse(f);
+
+    for (auto& [key, value] : data.items())
+    {
+        std::cout << key << " : " << value << "\n";
+
+        const nlohmann::json json_tile(value["index"]);
+        const nlohmann::json json_tiles(value["tiles"]);
+
+        Tile tile{json_tile};
+
+        for (auto i = 0; i < 4; i++)
+        {
+            std::set<int32_t> indices;
+            for (auto& direction : json_tiles[i].items())
+            {
+                const int32_t index = direction.value();
+                indices.insert(index);
+            }
+
+            tile._compatible_tiles[i] = indices;
+        }
+
+        _tiles.push_back(tile);
+    }
+}
+
+
+void Config::save()
+{
+    nlohmann::json config;
+
+    for (auto& tile : _tiles)
+    {
+        nlohmann::json json_tile;
+        nlohmann::json arr(tile._compatible_tiles);
+
+        json_tile["index"] = tile._tile_index;
+        json_tile["tiles"] = arr;
+
+        config.push_back(json_tile);
+    }
+
+    std::ofstream out("config.json");
+    out << std::setw(4) << config << std::endl;
 }

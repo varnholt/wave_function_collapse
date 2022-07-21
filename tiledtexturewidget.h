@@ -9,8 +9,12 @@ class TiledTextureWidget : public QWidget
 {
     Q_OBJECT
 public:
+
     explicit TiledTextureWidget(QWidget* parent = nullptr);
+
     void setSelectMultiple(bool enabled);
+    void setSelectedTiles(const std::set<int32_t>& selection);
+    void clearSelection();
 
     const QImage& texture() const;
 

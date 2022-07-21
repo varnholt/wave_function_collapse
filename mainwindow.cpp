@@ -12,19 +12,6 @@ Tile::Direction current_direction = Tile::Direction::North;
 std::optional<int32_t> current_tile_index;
 }
 
-void MainWindow::generate()
-{
-    int32_t width = ui->_grid_width->text().toInt();
-    int32_t height = ui->_grid_height->text().toInt();
-
-    std::vector<Tile> tiles;
-
-    std::srand(std::time(0));
-    Grid model(width, height, tiles);
-    model.run();
-    model.debug();
-}
-
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -38,7 +25,7 @@ MainWindow::MainWindow(QWidget *parent)
         ui->_generate,
         &QPushButton::pressed,
         this,
-        &MainWindow::unitTest
+        &MainWindow::generate
     );
 
     connect(
@@ -48,17 +35,8 @@ MainWindow::MainWindow(QWidget *parent)
         [this](int32_t index){
 
             Config::instance().addTile(index);
-            current_tile_index = index;
-
-            const auto& image = ui->_tiled_image->texture();
-            const auto cols = 5;
-            const auto tile_width = 16;
-
-            const auto x = (index % cols) * tile_width;
-            const auto y = (index / cols) * tile_width;
-
-            const auto copy = image.copy(x, y, tile_width, tile_width);
-            ui->_tile_label->setPixmap(QPixmap::fromImage(copy));
+            showSelectedTile(index);
+            updatedSelectedTiles();
         }
     );
 
@@ -80,32 +58,36 @@ MainWindow::MainWindow(QWidget *parent)
         ui->_dir_north,
         &QToolButton::pressed,
         this,
-        [](){
+        [this](){
         current_direction = Tile::Direction::North;
+        updatedSelectedTiles();
     });
 
     connect(
         ui->_dir_east,
         &QToolButton::pressed,
         this,
-        [](){
+        [this](){
         current_direction = Tile::Direction::East;
+        updatedSelectedTiles();
     });
 
     connect(
         ui->_dir_south,
         &QToolButton::pressed,
         this,
-        [](){
+        [this](){
         current_direction = Tile::Direction::South;
+        updatedSelectedTiles();
     });
 
     connect(
         ui->_dir_west,
         &QToolButton::pressed,
         this,
-        [](){
+        [this](){
         current_direction = Tile::Direction::West;
+        updatedSelectedTiles();
     });
 
     auto dir_button_group = new QButtonGroup(this);
@@ -114,12 +96,54 @@ MainWindow::MainWindow(QWidget *parent)
     dir_button_group->addButton(ui->_dir_east);
     dir_button_group->addButton(ui->_dir_south);
     dir_button_group->addButton(ui->_dir_west);
+
+    connect(
+        ui->_action_load,
+        &QAction::triggered,
+        [](){
+        Config::instance().load();
+    });
+
+    connect(
+        ui->_action_save,
+        &QAction::triggered,
+        [](){
+        Config::instance().save();
+    });
 }
 
 
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+
+void MainWindow::showSelectedTile(int32_t index)
+{
+    current_tile_index = index;
+
+    const auto& image = ui->_tiled_image->texture();
+    const auto cols = 5;
+    const auto tile_width = 16;
+
+    const auto x = (index % cols) * tile_width;
+    const auto y = (index / cols) * tile_width;
+
+    const auto copy = image.copy(x, y, tile_width, tile_width);
+    ui->_tile_label->setPixmap(QPixmap::fromImage(copy));
+}
+
+
+void MainWindow::updatedSelectedTiles()
+{
+    if (!current_tile_index.has_value())
+    {
+        return;
+    }
+
+    auto& tile = Config::instance().getTile(current_tile_index.value());
+    ui->_compatible_tiles->setSelectedTiles(tile._compatible_tiles[static_cast<int32_t>(current_direction)]);
 }
 
 
@@ -162,7 +186,27 @@ void MainWindow::unitTest()
     Tile::instance_counter = 0;
     Grid grid(config._grid_size._x, config._grid_size._y, tiles);
     grid.run();
-    // grid.debug();
+
+    ui->_tile_grid->setTexture(texture);
+    ui->_tile_grid->setGrid(grid._size, grid.readGrid());
+}
+
+
+void MainWindow::generate()
+{
+    QImage texture;
+    texture.load("texture.png");
+
+    auto& config = Config::instance();
+    config._grid_size._x = 32;
+    config._grid_size._y = 32;
+    config._texture_size._x = texture.width();
+    config._texture_size._y = texture.height();
+
+    std::srand(std::time(0));
+    Tile::instance_counter = 0;
+    Grid grid(config._grid_size._x, config._grid_size._y, config._tiles);
+    grid.run();
 
     ui->_tile_grid->setTexture(texture);
     ui->_tile_grid->setGrid(grid._size, grid.readGrid());

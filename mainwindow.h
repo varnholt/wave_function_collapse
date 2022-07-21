@@ -21,5 +21,7 @@ private:
 private slots:
     void unitTest();
     void generate();
+    void updatedSelectedTiles();
+    void showSelectedTile(int32_t);
 };
 #endif // MAINWINDOW_H

@@ -107,12 +107,12 @@ void Grid::collapseSlot(const Vector2D& pos)
 
     // for debugging only
     //
-    // if (tile_indices.empty())
-    // {
-    //     _terminate = true;
-    //     std::cerr << "giving up, slots left: " << _collapsed_remaining_count << " pos: " << pos._x << ", " << pos._y << std::endl;
-    //     return;
-    // }
+    if (tile_indices.empty())
+    {
+        _terminate = true;
+        std::cerr << "giving up, slots left: " << _collapsed_remaining_count << " pos: " << pos._x << ", " << pos._y << std::endl;
+        return;
+    }
 
     // this should be weighted instead, i.e. tiles should have a bias
     const auto selected_tile_index = tile_indices[rand() % tile_indices.size()];

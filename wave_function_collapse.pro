@@ -22,6 +22,7 @@ SOURCES += \
 HEADERS += \
     config.h \
     drawabletile.h \
+    json.hpp \
     mainwindow.h \
     tile.h \
     tiledtexturewidget.h \

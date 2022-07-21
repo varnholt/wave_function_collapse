@@ -26,6 +26,20 @@ void TiledTextureWidget::setSelectMultiple(bool enabled)
 }
 
 
+void TiledTextureWidget::setSelectedTiles(const std::set<int32_t>& selection)
+{
+    _selected_tile_indices = selection;
+    update();
+}
+
+
+void TiledTextureWidget::clearSelection()
+{
+    _selected_tile_indices.clear();
+    update();
+}
+
+
 void TiledTextureWidget::highlightIndex(int32_t index, QPainter& painter, const QColor& color)
 {
     const auto cols = 5;
