@@ -234,7 +234,11 @@ void Grid::run()
     {
         const auto slot_pos = findMinEntropyPos();
         collapseSlot(slot_pos);
-        propagate(slot_pos);
+
+        if (!_given_up)
+        {
+            propagate(slot_pos);
+        }
     }
 }
 
