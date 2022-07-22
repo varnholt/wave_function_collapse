@@ -215,6 +215,7 @@ void MainWindow::generate()
     while (!succesful)
     {
         ui->_tile_grid->clearPositionedTiles();
+        qApp->processEvents();
 
         Grid grid(config._grid_size._x, config._grid_size._y, config._tiles);
         grid._tile_collapsed_callback = [this](const Vector2D& pos, int32_t index){
