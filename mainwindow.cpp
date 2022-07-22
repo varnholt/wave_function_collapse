@@ -219,7 +219,9 @@ void MainWindow::generate()
         Grid grid(config._grid_size._x, config._grid_size._y, config._tiles);
         grid._tile_collapsed_callback = [this](const Vector2D& pos, int32_t index){
             ui->_tile_grid->addPositionedTile(pos, index);
+            qApp->processEvents();
         };
+
         grid.run();
 
         succesful = !grid._given_up;
@@ -228,11 +230,6 @@ void MainWindow::generate()
         {
             collapsed_slot_count = grid._collapsed_slot_count;
             std::cout << collapsed_slot_count << std::endl;
-
-            if (collapsed_slot_count > 250)
-            {
-                break;
-            }
         }
 
         if (succesful)
