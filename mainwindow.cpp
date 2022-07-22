@@ -197,10 +197,12 @@ void MainWindow::generate()
 {
     QImage texture;
     texture.load("texture.png");
+    ui->_tile_grid->setTexture(texture);
 
     auto& config = Config::instance();
-    config._grid_size._x = 32;
-    config._grid_size._y = 32;
+    config._tile_size = ui->_tile_size->text().toInt();
+    config._grid_size._x = ui->_grid_width->text().toInt();
+    config._grid_size._y = ui->_grid_height->text().toInt();
     config._texture_size._x = texture.width();
     config._texture_size._y = texture.height();
 
@@ -209,9 +211,15 @@ void MainWindow::generate()
 
     auto succesful = false;
     int32_t collapsed_slot_count = 0;
-    // while (!succesful)
+
+    while (!succesful)
     {
+        ui->_tile_grid->clearPositionedTiles();
+
         Grid grid(config._grid_size._x, config._grid_size._y, config._tiles);
+        grid._tile_collapsed_callback = [this](const Vector2D& pos, int32_t index){
+            ui->_tile_grid->addPositionedTile(pos, index);
+        };
         grid.run();
 
         succesful = !grid._given_up;
@@ -220,11 +228,15 @@ void MainWindow::generate()
         {
             collapsed_slot_count = grid._collapsed_slot_count;
             std::cout << collapsed_slot_count << std::endl;
+
+            if (collapsed_slot_count > 250)
+            {
+                break;
+            }
         }
 
-        // if (succesful)
+        if (succesful)
         {
-            ui->_tile_grid->setTexture(texture);
             ui->_tile_grid->setGrid(grid._size, grid.readGrid());
         }
     }

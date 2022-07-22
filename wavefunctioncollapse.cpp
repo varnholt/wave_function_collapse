@@ -115,7 +115,13 @@ void Grid::collapseSlot(const Vector2D& pos)
 
     // this should be weighted instead, i.e. tiles should have a bias
     const auto selected_tile_index = tile_indices[rand() % tile_indices.size()];
+
     collapseTile(slot, selected_tile_index);
+
+    if (_tile_collapsed_callback)
+    {
+        _tile_collapsed_callback(pos, selected_tile_index);
+    }
 
     // std::cout << "collapsed slot at pos: " << pos._x << ", " << pos._y << ": " << _tiles[selected_tile_index]._tile_index << std::endl;
     _collapsed_slot_count++;

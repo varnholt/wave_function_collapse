@@ -2,6 +2,7 @@
 
 #include <array>
 #include <cstdint>
+#include <functional>
 #include <vector>
 
 #include "tile.h"
@@ -25,6 +26,8 @@ struct Grid
 {
     Grid(int32_t width, int32_t height, const std::vector<Tile>& tiles);
 
+    using CollapsedCallback = std::function<void(const Vector2D&, int32_t)>;
+
     bool isTileCompatible(int32_t index_1, int32_t index_2, const Vector2D& dir) const;
     Vector2D findMinEntropyPos() const;
     bool isFullyCollapsed() const;
@@ -47,6 +50,7 @@ struct Grid
     int32_t _collapsed_remaining_count{};
     int32_t _collapsed_slot_count{};
     bool _given_up{false};
+    CollapsedCallback _tile_collapsed_callback;
 };
 
 
