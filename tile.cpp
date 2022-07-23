@@ -67,3 +67,10 @@ bool Tile::isCompatibleWith(const Tile& another, const Vector2D& dir_vector) con
     return compatible;
 }
 
+bool Tile::operator <(const Tile &other)
+{
+    return _bias < other._bias;
+}
+
+
+

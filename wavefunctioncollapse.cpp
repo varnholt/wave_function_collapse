@@ -1,5 +1,6 @@
 #include "wavefunctioncollapse.h"
 
+#include <algorithm>
 #include <iostream>
 
 
@@ -62,7 +63,7 @@ Vector2D Grid::findMinEntropyPos() const
         }
     }
 
-    return slot_with_min_entropy_pos[rand() % slot_with_min_entropy_pos.size()];
+    return slot_with_min_entropy_pos[std::rand() % slot_with_min_entropy_pos.size()];
 }
 
 
@@ -113,8 +114,23 @@ void Grid::collapseSlot(const Vector2D& pos)
         return;
     }
 
-    // this should be weighted instead, i.e. tiles should have a bias
-    const auto selected_tile_index = tile_indices[rand() % tile_indices.size()];
+    // prefer tiles with heigher weight
+    std::vector<Tile> tiles_sorted_by_weight;
+    std::vector<Tile> weight_filtered_tiles;
+    for (auto index : tile_indices)
+    {
+        tiles_sorted_by_weight.push_back(_tiles[index]);
+    }
+    std::sort(tiles_sorted_by_weight.begin(), tiles_sorted_by_weight.end());
+    auto random_bias = (std::rand() % 255) / 255.0f;
+    std::copy_if(
+        tiles_sorted_by_weight.begin(), tiles_sorted_by_weight.end(),
+        std::back_inserter(weight_filtered_tiles),
+        [random_bias](const Tile& t) { return t._bias > random_bias;
+    });
+
+    // pick the tile
+    const auto selected_tile_index = tile_indices[std::rand() % tile_indices.size()];
 
     collapseTile(slot, selected_tile_index);
 

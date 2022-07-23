@@ -26,9 +26,12 @@ struct Tile
 
     virtual bool isCompatibleWith(const Tile& another, const Vector2D &dir) const;
 
-    int32_t _tile_index = 0;
-    int32_t _instance_index = 0;
+    bool operator < (const Tile& other);
+
+    int32_t _tile_index{0};
+    int32_t _instance_index{0};
     std::array<std::set<int32_t>, 4> _compatible_tiles;
+    float _bias{0.1f};
     static int32_t instance_counter;
 };
 
