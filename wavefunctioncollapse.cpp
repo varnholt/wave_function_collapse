@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <iostream>
+#include <optional>
 
 
 Grid::Grid(int32_t width, int32_t height, const std::vector<Tile>& tiles)
@@ -114,29 +115,43 @@ void Grid::collapseSlot(const Vector2D& pos)
         return;
     }
 
-    // prefer tiles with heigher weight
-    std::vector<Tile> tiles_sorted_by_weight;
-    std::vector<Tile> weight_filtered_tiles;
-    for (auto index : tile_indices)
+    std::optional<int32_t> selected_tile_index;
+
+    if (_use_bias)
     {
-        tiles_sorted_by_weight.push_back(_tiles[index]);
+        // prefer tiles with heigher weight
+        std::vector<Tile> all_tiles;
+        std::vector<Tile> tiles_filtered_by_bias;
+        for (auto index : tile_indices)
+        {
+            all_tiles.push_back(_tiles[index]);
+        }
+        std::sort(all_tiles.begin(), all_tiles.end());
+        const auto random_bias = (std::rand() % 100) * 0.01f;
+        std::copy_if(
+            all_tiles.begin(), all_tiles.end(),
+            std::back_inserter(tiles_filtered_by_bias),
+            [random_bias](const Tile& t) {
+                return t._bias >= random_bias;
+            }
+        );
+
+        if (!tiles_filtered_by_bias.empty())
+        {
+            selected_tile_index = tiles_filtered_by_bias[std::rand() % tiles_filtered_by_bias.size()]._array_index;
+        }
     }
-    std::sort(tiles_sorted_by_weight.begin(), tiles_sorted_by_weight.end());
-    auto random_bias = (std::rand() % 255) / 255.0f;
-    std::copy_if(
-        tiles_sorted_by_weight.begin(), tiles_sorted_by_weight.end(),
-        std::back_inserter(weight_filtered_tiles),
-        [random_bias](const Tile& t) { return t._bias > random_bias;
-    });
 
-    // pick the tile
-    const auto selected_tile_index = tile_indices[std::rand() % tile_indices.size()];
+    if (!selected_tile_index.has_value())
+    {
+        selected_tile_index = tile_indices[std::rand() % tile_indices.size()];
+    }
 
-    collapseTile(slot, selected_tile_index);
+    collapseTile(slot, selected_tile_index.value());
 
     if (_tile_collapsed_callback)
     {
-        _tile_collapsed_callback(pos, selected_tile_index);
+        _tile_collapsed_callback(pos, selected_tile_index.value());
     }
 
     // std::cout << "collapsed slot at pos: " << pos._x << ", " << pos._y << ": " << _tiles[selected_tile_index]._tile_index << std::endl;
@@ -277,7 +292,7 @@ std::vector<int32_t> Grid::readGrid() const
             const auto index = getProbableTileIndex(Vector2D{x, y});
             if (index < _tiles.size())
             {
-                grid[y * _size._x + x] = _tiles[index]._tile_index;
+                grid[y * _size._x + x] = _tiles[index]._tileset_index;
             }
         }
     }

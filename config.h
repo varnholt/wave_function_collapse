@@ -21,6 +21,9 @@ struct Config
     Vector2D _texture_size;
     Vector2D _grid_size;
     int32_t _tile_size{0};
+    std::string _texture_path;
+
+    bool _use_bias = false;
 
     void load();
     void save();

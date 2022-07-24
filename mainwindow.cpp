@@ -11,6 +11,26 @@ namespace
 {
 Tile::Direction current_direction = Tile::Direction::North;
 std::optional<int32_t> current_tile_index;
+
+
+Tile::Direction oppositeDirection(Tile::Direction dir)
+{
+    switch (dir)
+    {
+        case Tile::Direction::North:
+            return Tile::Direction::South;
+        case Tile::Direction::East:
+            return Tile::Direction::West;
+        case Tile::Direction::South:
+            return Tile::Direction::North;
+        case Tile::Direction::West:
+            return Tile::Direction::East;
+    }
+
+    // things went
+    return Tile::Direction::South;
+}
+
 }
 
 
@@ -34,10 +54,10 @@ MainWindow::MainWindow(QWidget *parent)
         &TiledTextureWidget::tileSelected,
         this,
         [this](int32_t index){
-
             Config::instance().addTile(index);
             showSelectedTile(index);
             updatedSelectedTiles();
+            ui->_tile_bias->setValue(Config::instance().getTile(index)._bias * 100.0f);
         }
     );
 
@@ -52,6 +72,25 @@ MainWindow::MainWindow(QWidget *parent)
             }
             auto& tile = Config::instance().getTile(current_tile_index.value());
             tile.setCompatibleTiles(current_direction, indices);
+
+            // compability is bidirectional, so also add the current tile to the others
+            for (auto other_tile_index : indices)
+            {
+                Config::instance().addTile(other_tile_index);
+                auto& other_tile = Config::instance().getTile(other_tile_index);
+                other_tile.addCompatibleTile(oppositeDirection(current_direction), current_tile_index.value());
+            }
+        }
+    );
+
+    connect(
+        ui->_tile_bias,
+        &QSlider::sliderMoved,
+        this,
+        [](int32_t value){
+            const auto bias = value * 0.01f;
+            auto& tile = Config::instance().getTile(current_tile_index.value());
+            tile._bias = bias;
         }
     );
 
@@ -205,6 +244,7 @@ void MainWindow::generate()
     config._grid_size._y = ui->_grid_height->text().toInt();
     config._texture_size._x = texture.width();
     config._texture_size._y = texture.height();
+    config._use_bias = ui->_use_biases->isChecked();
 
     std::srand(std::time(0));
     Tile::instance_counter = 0;
@@ -215,9 +255,9 @@ void MainWindow::generate()
     while (!succesful)
     {
         ui->_tile_grid->clearPositionedTiles();
-        qApp->processEvents();
 
         Grid grid(config._grid_size._x, config._grid_size._y, config._tiles);
+        grid._use_bias = config._use_bias;
         grid._tile_collapsed_callback = [this](const Vector2D& pos, int32_t index){
             ui->_tile_grid->addPositionedTile(pos, index);
             qApp->processEvents();

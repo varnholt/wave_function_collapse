@@ -36,7 +36,7 @@ int32_t Config::textureRowCount() const
 void Config::addTile(int32_t tile_index)
 {
     const auto& it = std::find_if(_tiles.begin(), _tiles.end(), [tile_index](const Tile& t) {
-        return t._tile_index == tile_index;
+        return t._tileset_index == tile_index;
     });
 
     if (it != _tiles.end())
@@ -44,14 +44,15 @@ void Config::addTile(int32_t tile_index)
         return;
     }
 
-    _tiles.push_back({tile_index});
+    Tile t{tile_index, static_cast<int32_t>(_tiles.size())};
+    _tiles.push_back(t);
 }
 
 
 Tile& Config::getTile(int32_t tile_index)
 {
     auto it = std::find_if(_tiles.begin(), _tiles.end(), [tile_index](const Tile& t) {
-        return t._tile_index == tile_index;
+        return t._tileset_index == tile_index;
     });
 
     return *it;
@@ -60,19 +61,30 @@ Tile& Config::getTile(int32_t tile_index)
 
 void Config::load()
 {
-    _tiles.clear();
-
     std::ifstream f("config.json");
-    const nlohmann::json data = nlohmann::json::parse(f);
+    const nlohmann::json config = nlohmann::json::parse(f);
+    const nlohmann::json texture = config["texture"];
+    const nlohmann::json use_bias = config["use_bias"];
+    const nlohmann::json tile_size = config["tile_size"];
+    const nlohmann::json grid_size = config["grid_size"];
 
-    for (auto& [key, value] : data.items())
+    _texture_path = texture;
+    _use_bias = use_bias;
+    _tile_size = tile_size;
+    _grid_size = Vector2D{grid_size[0], grid_size[1]};
+
+    _tiles.clear();
+    const nlohmann::json tiles = config["tiles"];
+    for (auto& [key, value] : tiles.items())
     {
         std::cout << key << " : " << value << "\n";
 
         const nlohmann::json json_tile(value["index"]);
-        const nlohmann::json json_tiles(value["tiles"]);
+        const nlohmann::json json_tile_bias(value["bias"]);
+        const nlohmann::json json_tiles(value["compatible_tiles"]);
 
-        Tile tile{json_tile};
+        Tile tile{json_tile, static_cast<int32_t>(_tiles.size())};
+        tile._bias = json_tile_bias;
 
         for (auto i = 0; i < 4; i++)
         {
@@ -95,16 +107,25 @@ void Config::save()
 {
     nlohmann::json config;
 
+    config["texture"] = _texture_path;
+    config["use_bias"] = _use_bias;
+    config["tile_size"] = _tile_size;
+    config["grid_size"] = std::array<int32_t, 2>{_grid_size._x, _grid_size._y};
+
+    nlohmann::json tiles;
     for (auto& tile : _tiles)
     {
         nlohmann::json json_tile;
         nlohmann::json arr(tile._compatible_tiles);
 
-        json_tile["index"] = tile._tile_index;
-        json_tile["tiles"] = arr;
+        json_tile["index"] = tile._tileset_index;
+        json_tile["bias"] = tile._bias;
+        json_tile["compatible_tiles"] = arr;
 
-        config.push_back(json_tile);
+        tiles.push_back(json_tile);
     }
+
+    config["tiles"] = tiles;
 
     std::ofstream out("config.json");
     out << std::setw(4) << config << std::endl;

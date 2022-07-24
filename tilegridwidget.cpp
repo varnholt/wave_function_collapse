@@ -48,8 +48,8 @@ void TileGridWidget::paintEvent(QPaintEvent* /*event*/)
     for (const auto& pt : _positioned_tiles)
     {
         const auto& tile = Config::instance().getTile(pt._tile_index);
-        const auto source_x = (tile._tile_index % cols) * tile_width;
-        const auto source_y = (tile._tile_index / cols) * tile_width;
+        const auto source_x = (tile._tileset_index % cols) * tile_width;
+        const auto source_y = (tile._tileset_index / cols) * tile_width;
         p.drawImage(pt._pos._x, pt._pos._y, _texture, source_x, source_y, tile_width, tile_width);
     }
 }
@@ -76,7 +76,7 @@ void TileGridWidget::setGrid(const Vector2D& size, const std::vector<int32_t>& n
 void TileGridWidget::addPositionedTile(const Vector2D& pos, int32_t tile_index)
 {
     PositionedTile pt;
-    pt._tile_index = Config::instance()._tiles[tile_index]._tile_index;
+    pt._tile_index = Config::instance()._tiles[tile_index]._tileset_index;
     pt._pos._x = pos._x * Config::instance()._tile_size;
     pt._pos._y = pos._y * Config::instance()._tile_size;
     _positioned_tiles.push_back(pt);

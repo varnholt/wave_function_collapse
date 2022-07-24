@@ -50,6 +50,7 @@ struct Grid
     int32_t _collapsed_remaining_count{};
     int32_t _collapsed_slot_count{};
     bool _given_up{false};
+    bool _use_bias{false};
     CollapsedCallback _tile_collapsed_callback;
 };
 
