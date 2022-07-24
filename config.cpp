@@ -59,9 +59,11 @@ Tile& Config::getTile(int32_t tile_index)
 }
 
 
-void Config::load()
+void Config::load(const std::string& file_path)
 {
-    std::ifstream f("config.json");
+    _project_file_path = file_path;
+
+    std::ifstream f(file_path);
     const nlohmann::json config = nlohmann::json::parse(f);
     const nlohmann::json texture = config["texture"];
     const nlohmann::json use_bias = config["use_bias"];
@@ -127,6 +129,6 @@ void Config::save()
 
     config["tiles"] = tiles;
 
-    std::ofstream out("config.json");
+    std::ofstream out(_project_file_path);
     out << std::setw(4) << config << std::endl;
 }

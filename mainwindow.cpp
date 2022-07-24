@@ -6,6 +6,7 @@
 
 #include <iostream>
 #include <QButtonGroup>
+#include <QFileDialog>
 
 namespace
 {
@@ -39,6 +40,8 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    setWindowTitle(tr("Wave Function Collapse Editor 1.0"));
 
     ui->_compatible_tiles->setSelectMultiple(true);
 
@@ -140,8 +143,20 @@ MainWindow::MainWindow(QWidget *parent)
     connect(
         ui->_action_load,
         &QAction::triggered,
-        [](){
-        Config::instance().load();
+        this,
+        [this](){
+        const auto path = QFileDialog::getOpenFileName(this, tr("project path"), QString(), "*.json");
+        if (path.isEmpty())
+        {
+            return;
+        }
+        auto& config = Config::instance();
+        Config::instance().load(path.toStdString());
+        ui->_use_biases->setChecked(config._use_bias);
+        ui->_grid_width->setText(QString::number(config._grid_size._x));
+        ui->_grid_width->setText(QString::number(config._grid_size._y));
+        ui->_tile_size->setText(QString::number(config._tile_size));
+        loadTexture();
     });
 
     connect(
@@ -150,6 +165,36 @@ MainWindow::MainWindow(QWidget *parent)
         [](){
         Config::instance().save();
     });
+
+    connect(
+        ui->_action_save_as,
+        &QAction::triggered,
+        this,
+        [this](){
+        const auto path = QFileDialog::getOpenFileName(this, tr("project path"), QString(), "*.json");
+        if (path.isEmpty())
+        {
+            return;
+        }
+        Config::instance()._project_file_path = path.toStdString();
+        Config::instance().save();
+    });
+
+    connect(
+        ui->_action_load_texture,
+        &QAction::triggered,
+        this,
+        [this](){
+            const auto path = QFileDialog::getOpenFileName(this, tr("texture path"));
+            if (path.isEmpty())
+            {
+                return;
+            }
+
+            Config::instance()._texture_path = path.toStdString();
+            loadTexture();
+        }
+    );
 }
 
 
@@ -159,13 +204,26 @@ MainWindow::~MainWindow()
 }
 
 
+void MainWindow::loadTexture()
+{
+    auto& config = Config::instance();
+    QImage texture;
+    texture.load(QString::fromStdString(config._texture_path));
+    config._texture_size._x = texture.width();
+    config._texture_size._y = texture.height();
+    ui->_tile_grid->setTexture(texture);
+    ui->_tiled_image->setTexture(texture);
+    ui->_compatible_tiles->setTexture(texture);
+}
+
+
 void MainWindow::showSelectedTile(int32_t index)
 {
     current_tile_index = index;
 
     const auto& image = ui->_tiled_image->texture();
-    const auto cols = 5;
-    const auto tile_width = 16;
+    const auto cols = Config::instance().textureColumnCount();
+    const auto tile_width = Config::instance()._tile_size;
 
     const auto x = (index % cols) * tile_width;
     const auto y = (index / cols) * tile_width;
@@ -234,16 +292,10 @@ void MainWindow::unitTest()
 
 void MainWindow::generate()
 {
-    QImage texture;
-    texture.load("texture.png");
-    ui->_tile_grid->setTexture(texture);
-
     auto& config = Config::instance();
     config._tile_size = ui->_tile_size->text().toInt();
     config._grid_size._x = ui->_grid_width->text().toInt();
     config._grid_size._y = ui->_grid_height->text().toInt();
-    config._texture_size._x = texture.width();
-    config._texture_size._y = texture.height();
     config._use_bias = ui->_use_biases->isChecked();
 
     std::srand(std::time(0));

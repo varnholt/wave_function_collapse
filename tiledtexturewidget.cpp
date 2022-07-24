@@ -1,5 +1,7 @@
 #include "tiledtexturewidget.h"
 
+#include "config.h"
+
 #include <QColor>
 #include <QMouseEvent>
 #include <QPainter>
@@ -9,13 +11,6 @@
 TiledTextureWidget::TiledTextureWidget(QWidget* parent)
     : QWidget{parent}
 {
-    if (!_texture.load("texture.png"))
-    {
-        std::cout << "can't load image" << std::endl;
-    }
-
-    setMinimumSize(_texture.size());
-    setMaximumSize(_texture.size());
     setMouseTracking(true);
 }
 
@@ -40,10 +35,25 @@ void TiledTextureWidget::clearSelection()
 }
 
 
+void TiledTextureWidget::setTexture(const QImage &texture)
+{
+    _texture = texture;
+    setMinimumSize(_texture.size());
+    setMaximumSize(_texture.size());
+    update();
+}
+
+
 void TiledTextureWidget::highlightIndex(int32_t index, QPainter& painter, const QColor& color)
 {
-    const auto cols = 5;
-    const auto tile_width = 16;
+    const auto cols = Config::instance().textureColumnCount();
+
+    if (cols == 0)
+    {
+        return;
+    }
+
+    const auto tile_width = Config::instance()._tile_size;
 
     const auto source_x = (index % cols) * tile_width;
     const auto source_y = (index / cols) * tile_width;

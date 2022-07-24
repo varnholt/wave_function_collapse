@@ -16,6 +16,7 @@ TileGridWidget::TileGridWidget(QWidget* parent)
 void TileGridWidget::setTexture(const QImage& newTexture)
 {
     _texture = newTexture;
+    update();
 }
 
 
@@ -65,9 +66,6 @@ void TileGridWidget::setGrid(const Vector2D& size, const std::vector<int32_t>& n
 {
     _size = size;
     _grid = newGrid;
-
-    // setMinimumSize(size._x * 16, size._y * 16);
-    // setMaximumSize(size._x * 16, size._y * 16);
 
     update();
 }

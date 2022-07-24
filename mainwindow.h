@@ -18,6 +18,8 @@ public:
 private:
     Ui::MainWindow *ui;
 
+    void loadTexture();
+    
 private slots:
     void unitTest();
     void generate();

@@ -16,6 +16,7 @@ public:
     void setSelectedTiles(const std::set<int32_t>& selection);
     void clearSelection();
 
+    void setTexture(const QImage& texture);
     const QImage& texture() const;
 
 signals:
