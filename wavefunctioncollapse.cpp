@@ -19,7 +19,6 @@ Grid::Grid(int32_t width, int32_t height, const std::vector<Tile>& tiles)
     }
 }
 
-
 int32_t Grid::getProbableTileIndex(const Vector2D& pos) const
 {
     const auto index = (pos._y * _size._x + pos._x);

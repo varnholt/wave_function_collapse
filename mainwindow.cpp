@@ -180,21 +180,26 @@ MainWindow::MainWindow(QWidget *parent)
         Config::instance().save();
     });
 
-    connect(
-        ui->_action_load_texture,
-        &QAction::triggered,
-        this,
-        [this](){
-            const auto path = QFileDialog::getOpenFileName(this, tr("texture path"));
-            if (path.isEmpty())
-            {
-                return;
-            }
-
-            Config::instance()._texture_path = path.toStdString();
-            loadTexture();
+    connect(ui->_action_load_texture, &QAction::triggered, this, [this]() {
+        const auto path = QFileDialog::getOpenFileName(this, tr("texture path"));
+        if (path.isEmpty()) {
+            return;
         }
-    );
+
+        Config::instance()._texture_path = path.toStdString();
+        loadTexture();
+    });
+
+    auto update_tile_size = [this]() {
+        auto &config = Config::instance();
+        config._tile_size = ui->_tile_size->text().toInt();
+        ui->_tiled_image->update();
+        ui->_compatible_tiles->update();
+    };
+
+    update_tile_size();
+
+    connect(ui->_tile_size, &QLineEdit::textChanged, this, update_tile_size);
 }
 
 
