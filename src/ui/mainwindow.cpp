@@ -157,7 +157,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
          Config::instance().load(path.toStdString());
          ui->_use_biases->setChecked(config._use_bias);
          ui->_grid_width->setText(QString::number(config._grid_size._x));
-         ui->_grid_width->setText(QString::number(config._grid_size._y));
+         ui->_grid_height->setText(QString::number(config._grid_size._y));
          ui->_tile_size->setText(QString::number(config._tile_size));
          loadTexture();
       }

@@ -4,34 +4,27 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 CONFIG += c++17
 
-# You can make your code fail to compile if it uses deprecated APIs.
-# In order to do so, uncomment the following line.
-#DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
-
 SOURCES += \
-    config.cpp \
-    main.cpp \
-    mainwindow.cpp \
-    tile.cpp \
-    tiledtexturewidget.cpp \
-    tilegridwidget.cpp \
-    vector2d.cpp \
-    wavefunctioncollapse.cpp
+    src/config.cpp \
+    src/main.cpp \
+    src/tile.cpp \
+    src/vector2d.cpp \
+    src/wavefunctioncollapse.cpp \
+    src/ui/mainwindow.cpp \
+    src/ui/tiledtexturewidget.cpp \
+    src/ui/tilegridwidget.cpp
 
 HEADERS += \
-    config.h \
-    json.hpp \
-    mainwindow.h \
-    tile.h \
-    tiledtexturewidget.h \
-    tilegridwidget.h \
-    vector2d.h \
-    wavefunctioncollapse.h
+    src/config.h \
+    src/json.hpp \
+    src/tile.h \
+    src/vector2d.h \
+    src/wavefunctioncollapse.h \
+    src/ui/mainwindow.h \
+    src/ui/tiledtexturewidget.h \
+    src/ui/tilegridwidget.h
 
 FORMS += \
-    mainwindow.ui
+    src/ui/mainwindow.ui
 
-# Default rules for deployment.
-qnx: target.path = /tmp/$${TARGET}/bin
-else: unix:!android: target.path = /opt/$${TARGET}/bin
-!isEmpty(target.path): INSTALLS += target
+INCLUDEPATH += src src/ui
