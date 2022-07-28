@@ -65,6 +65,7 @@ const QImage& TiledTextureWidget::texture() const
 void TiledTextureWidget::paintEvent(QPaintEvent* /*event*/)
 {
    QPainter painter(this);
+   // painter.scale(2, 2);
 
    const auto tile_size = Config::instance()._tile_size;
 

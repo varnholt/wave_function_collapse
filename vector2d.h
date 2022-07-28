@@ -5,8 +5,8 @@
 
 struct Vector2D
 {
-    int32_t _x{};
-    int32_t _y{};
+   int32_t _x{};
+   int32_t _y{};
 };
 
-#endif // VECTOR2D_H
+#endif  // VECTOR2D_H

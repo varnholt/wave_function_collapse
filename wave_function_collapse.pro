@@ -10,7 +10,6 @@ CONFIG += c++17
 
 SOURCES += \
     config.cpp \
-    drawabletile.cpp \
     main.cpp \
     mainwindow.cpp \
     tile.cpp \
@@ -21,7 +20,6 @@ SOURCES += \
 
 HEADERS += \
     config.h \
-    drawabletile.h \
     json.hpp \
     mainwindow.h \
     tile.h \
